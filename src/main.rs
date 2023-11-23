@@ -4,9 +4,25 @@ use num_traits::{One, Zero};
 use rand::Rng;
 
 fn main() {
-    let mut rng = rand::thread_rng();
-    for i in 0..10 {
-        println!("{}", gen_nbit_random(512));
+    println!("How many bits, should the primes be?");
+    loop {
+        println!("nbits: ");
+
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+        let nbits = match line.trim().parse::<u32>() {
+            Ok(x) => x,
+            Err(_) => continue,
+        };
+
+        let mut modulus = BigUint::from(1u32);
+        for i in &['p', 'q'] {
+            let prime = gen_nbit_random(nbits);
+            modulus *= &prime;
+            println!("{}: {}", i, &prime);
+        }
+        println!("modulus: {}", modulus);
+        println!("Key Size: {}\n", 2 * nbits);
     }
 }
 
@@ -18,9 +34,6 @@ pub struct RsaKey {
 
 fn gen_nbit_random(nbits: u32) -> BigUint {
     let mut rng = rand::thread_rng();
-    if nbits % 8 != 0 {
-        panic!("nbits should divide by 8");
-    }
     let mut rand = BigUint::from(1u32);
     rand |= rng.gen_biguint_range(&Zero::zero(), &(BigUint::from(1u32) << (nbits - 2))) << 1u32;
     rand |= BigUint::from(1u32) << (nbits - 1);
@@ -35,7 +48,7 @@ fn miller_rabin(num: &BigUint) -> bool {
     if (num & BigUint::from(1u32)) == Zero::zero() {
         return false;
     }
-    let k = 50; // Sandsynlighed for fejl er 4^(-k) approx 1e-18
+    let k = 50; // Sandsynlighed for fejl er 4^(-k) approx 1e-30z
 
     // Factor out 2 of n-1
     let mut s = 0;
