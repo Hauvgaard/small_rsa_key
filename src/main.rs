@@ -35,7 +35,7 @@ pub struct RsaKey {
 fn gen_nbit_random(nbits: u32) -> BigUint {
     let mut rng = rand::thread_rng();
     let mut rand = BigUint::from(1u32);
-    rand |= rng.gen_biguint_range(&Zero::zero(), &(BigUint::from(1u32) << (nbits - 2))) << 1u32;
+    rand |= rng.gen_biguint_range(&Zero::zero(), (&(BigUint::from(1u32) << (nbits - 1))) - 1 ) << 1u32;
     rand |= BigUint::from(1u32) << (nbits - 1);
     while !miller_rabin(&rand) {
         rand += 2u32;
