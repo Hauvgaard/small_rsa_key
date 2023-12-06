@@ -4,26 +4,51 @@ use num_traits::{One, Zero};
 use rand::Rng;
 
 fn main() {
-    println!("How many bits, should the primes be?");
-    loop {
-        println!("nbits: ");
+    //println!("nbits: ");
 
-        let mut line = String::new();
-        std::io::stdin().read_line(&mut line).unwrap();
-        let nbits = match line.trim().parse::<u32>() {
-            Ok(x) => x,
-            Err(_) => continue,
-        };
+    //let mut line = String::new();
+    //std::io::stdin().read_line(&mut line).unwrap();
+    //let nbits = match line.trim().parse::<u32>() {
+    //    Ok(x) => x,
+    //    Err(_) => continue,
+    //};
 
+    println!("nbits,n,p,q,%");
+    for nbits in 30..40 {
+        //let nbits = 40;
         let mut modulus = BigUint::from(1u32);
-        for i in &['p', 'q'] {
-            let prime = gen_nbit_random(nbits);
-            modulus *= &prime;
-            println!("{}: {}", i, &prime);
+        let mut primes = vec![];
+        for i in 0..100 {
+            primes.push(gen_nbit_random(nbits));
         }
-        println!("modulus: {}", modulus);
-        println!("Key Size: {}\n", 2 * nbits);
+
+        'perc: for p in 0..10 {
+            for i in 0..100 {
+                for j in i..100 {
+                    let ratio = &primes[i] * 100u32 / &primes[j];
+                    if ratio < (100u32 - p * 5).into() && ratio > (100u32 - (p + 1) * 5).into() {
+                        println!(
+                            "{},{},{},{},{}",
+                            nbits,
+                            &primes[i] * &primes[j],
+                            &primes[i],
+                            &primes[j],
+                            ratio
+                        );
+                        continue 'perc;
+                    }
+                }
+            }
+        }
     }
+    /*
+    for i in &['p', 'q'] {
+        let prime = gen_nbit_random(nbits);
+        modulus *= &prime;
+        println!("{}: {}", i, &prime);
+    }*/
+    //println!("modulus: {}", modulus);
+    //println!("Key Size: {}\n", 2 * nbits);
 }
 
 pub struct RsaKey {
@@ -35,7 +60,7 @@ pub struct RsaKey {
 fn gen_nbit_random(nbits: u32) -> BigUint {
     let mut rng = rand::thread_rng();
     let mut rand = BigUint::from(1u32);
-    rand |= rng.gen_biguint_range(&Zero::zero(), (&(BigUint::from(1u32) << (nbits - 1))) - 1 ) << 1u32;
+    rand |= rng.gen_biguint_range(&Zero::zero(), (&(BigUint::from(1u32) << (nbits - 2)))) << 1u32;
     rand |= BigUint::from(1u32) << (nbits - 1);
     while !miller_rabin(&rand) {
         rand += 2u32;
